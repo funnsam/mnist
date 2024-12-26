@@ -1,0 +1,3 @@
+[submodule "smolnn2"]
+	path = smolnn2
+	url = git@github.com:funnsam/smolnn2
