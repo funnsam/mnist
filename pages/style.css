@@ -36,13 +36,18 @@ html, body {
     color: var(--text);
 }
 
+body {
+    padding: 0.5rem 0;
+    box-sizing: border-box;
+}
+
 #draw {
     display: block;
     width: 10rem;
     height: 10rem;
     image-rendering: crisp-edges;
     border: 1px solid var(--text);
-    margin: 0.5rem auto;
+    margin: 0 auto;
 }
 
 .controls {
@@ -74,7 +79,7 @@ html, body {
     left: -0.3rem;
     top: -0.3rem;
     z-index: 999;
-    border: 0.35rem solid var(--surface0);
+    border: 0.35rem solid var(--base);
     background-color: transparent;
     box-sizing: border-box;
     border-radius: 1rem;

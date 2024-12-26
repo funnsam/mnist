@@ -49,9 +49,9 @@ fn preproc(i: &Vector<784>) -> Vector<784> {
 
 fn main() {
     let mut model = load(2, || MnistModel {
-        l1: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
+        l1: fcnn::Fcnn::new_he_uniform(fastrand::f32).into(),
         l2: activation::LeakyRelu(0.01),
-        l3: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
+        l3: fcnn::Fcnn::new_he_uniform(fastrand::f32).into(),
         l4: activation::LeakyRelu(0.01),
         l5: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l6: activation::Softmax,
