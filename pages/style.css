@@ -49,6 +49,11 @@ html, body {
     text-align: center;
 }
 
+#prediction {
+    text-align: center;
+    margin: 0.25rem auto;
+}
+
 .meter {
     position: relative;
     width: 10rem;
@@ -63,18 +68,13 @@ html, body {
     height: 100%;
 }
 
-.meter > span:nth-child(4) {
-    width: 100%;
-    z-index: 998;
-    border: 0.5rem solid var(--base);
-    background-color: transparent;
-    box-sizing: border-box;
-}
-
 .meter > span:nth-child(3) {
-    width: 100%;
+    width: calc(100% + 0.6rem);
+    height: calc(100% + 0.6rem);
+    left: -0.3rem;
+    top: -0.3rem;
     z-index: 999;
-    border: 0.5rem solid var(--surface0);
+    border: 0.35rem solid var(--surface0);
     background-color: transparent;
     box-sizing: border-box;
     border-radius: 1rem;

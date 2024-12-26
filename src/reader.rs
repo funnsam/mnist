@@ -17,7 +17,7 @@ pub fn read_images<R: io::Read>(b: &mut R, mut limit: usize) -> io::Result<Vec<V
 
         for (yi, y) in buf.chunks(28).enumerate() {
             for (xi, i) in y.iter().enumerate() {
-                v[(0, xi + yi * 28)] = *i as f32 / 255.0;
+                v[xi + yi * 28] = *i as f32 / 255.0;
             }
         }
 

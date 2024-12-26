@@ -8,9 +8,9 @@ model! {
     pub MnistModel: 1, 784 => 1, 10
 
     => pub Box<fcnn::Fcnn<784, 128>>
-    => #[activation] pub activation::Tanh
+    => #[activation] pub activation::LeakyRelu
     => pub Box<fcnn::Fcnn<128, 64>>
-    => #[activation] pub activation::Tanh
+    => #[activation] pub activation::LeakyRelu
     => pub Box<fcnn::Fcnn<64, 10>>
     => #[activation] pub activation::Softmax
 }

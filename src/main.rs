@@ -4,8 +4,7 @@ use mnist::MnistModel;
 
 mod reader;
 
-const BAR_LENGTH: usize = 30;
-const MINI_BATCH_SIZE: usize = 10000;
+const MINI_BATCH_SIZE: usize = 5000;
 
 fn load<T: for<'a> serde::Deserialize<'a>, F: Fn() -> T>(n: usize, default: F) -> T {
     std::env::args().nth(n)
@@ -14,12 +13,46 @@ fn load<T: for<'a> serde::Deserialize<'a>, F: Fn() -> T>(n: usize, default: F) -
         .unwrap_or_else(default)
 }
 
+fn preproc(i: &Vector<784>) -> Vector<784> {
+    let mut result = Vector::new_zeroed();
+
+    let off_x = fastrand::isize(-3..=3);
+    let off_y = fastrand::isize(-3..=3);
+
+    let theta = fastrand::f32() * 0.5 - 0.25;
+    let r_mat = matrix!(
+        2 x 2
+        [theta.cos(), theta.sin()]
+        [-theta.sin(), theta.cos()]
+    );
+
+    for yi in 0..28 {
+        for xi in 0..28 {
+            let x = xi as isize + off_x - 14;
+            let y = yi as isize + off_y - 14;
+            let v = &r_mat * &vector!(2 [x as f32, y as f32]);
+            let x = v.x().round() as isize + 14;
+            let y = v.y().round() as isize + 14;
+
+            if 0 <= x && x < 28 && 0 <= y && y < 28 {
+                result[(x + y * 28) as usize] = i[xi + yi * 28];
+            }
+        }
+    }
+
+    result + &Vector::from_iter(core::iter::repeat_with(|| {
+        let x = fastrand::f32();
+        let sigma = 0.0005;
+        (-(x * x) / (2.0 * sigma)).exp() / (6400.0 * sigma * core::f32::consts::TAU.sqrt())
+    }))
+}
+
 fn main() {
     let mut model = load(2, || MnistModel {
         l1: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
-        l2: activation::Tanh,
+        l2: activation::LeakyRelu(0.01),
         l3: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
-        l4: activation::Tanh,
+        l4: activation::LeakyRelu(0.01),
         l5: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l6: activation::Softmax,
     });
@@ -29,9 +62,9 @@ fn main() {
             let (images, labels) = reader::read_data("train", None).unwrap();
 
             let (mut o1, mut o3, mut o5) = load(3, || (
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
             ));
 
             for i in 0.. {
@@ -42,7 +75,7 @@ fn main() {
 
                 for _ in 0..MINI_BATCH_SIZE {
                     let i = fastrand::usize(0..images.len());
-                    let input = &images[i];
+                    let input = &preproc(&images[i]);
                     let label = labels[i];
                     let mut expected = Vector::new_zeroed();
                     expected[label as usize] = 1.0;
@@ -96,10 +129,20 @@ fn main() {
             println!("Correct%: {:.2}%", (images.len() - wrong_c.iter().sum::<usize>()) as f32 / images.len() as f32 * 100.0);
             println!("Incorrect frequency: {wrong_c:?}");
         },
+        "visualize_train" => {
+            let (images, labels) = reader::read_data("train", None).unwrap();
+
+            for (i, l) in images.iter().zip(labels.iter()) {
+                visualize(&preproc(i));
+                println!("{l}");
+                std::thread::sleep(std::time::Duration::from_secs(1));
+            }
+        },
         _ => panic!("unknown command"),
     }
 }
 
+#[allow(unused)]
 fn visualize(fb: &Vector<784>) {
     for yhalf in 0..28 / 2 {
         for x in 0..28 {
@@ -110,13 +153,17 @@ fn visualize(fb: &Vector<784>) {
     }
 }
 
+#[allow(unused)]
 fn plot(a: f32, b: f32) {
     let a = (a * 255.0) as u8;
     let b = (b * 255.0) as u8;
     print!("\x1b[38;2;{a};{a};{a}m\x1b[48;2;{b};{b};{b}m▀");
 }
 
+#[allow(unused)]
 fn bar(v: &Vector<10>) {
+    const BAR_LENGTH: usize = 30;
+
     for (i, [v]) in v.inner.iter().enumerate() {
         let len = ((v + 1.0).log2() * BAR_LENGTH as f32).floor() as usize;
         println!(
