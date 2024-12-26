@@ -1,22 +1,11 @@
 use smolmatrix::*;
 use smolnn2::*;
+use mnist::MnistModel;
 
 mod reader;
 
 const BAR_LENGTH: usize = 30;
 const MINI_BATCH_SIZE: usize = 10000;
-
-model! {
-    #[derive(Clone, serde::Serialize, serde::Deserialize)]
-    pub MnistModel: 1, 784 => 1, 10
-
-    => fcnn::Fcnn<784, 64>
-    => #[activation] activation::Tanh
-    => fcnn::Fcnn<64, 64>
-    => #[activation] activation::Tanh
-    => fcnn::Fcnn<64, 10>
-    => #[activation] activation::Softmax
-}
 
 fn load<T: for<'a> serde::Deserialize<'a>, F: Fn() -> T>(n: usize, default: F) -> T {
     std::env::args().nth(n)
@@ -26,22 +15,23 @@ fn load<T: for<'a> serde::Deserialize<'a>, F: Fn() -> T>(n: usize, default: F) -
 }
 
 fn main() {
-    let (images, labels) = reader::read_data("train", None).unwrap();
     let mut model = load(2, || MnistModel {
-        l1: fcnn::Fcnn::new_xavier_uniform(fastrand::f32),
+        l1: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l2: activation::Tanh,
-        l3: fcnn::Fcnn::new_xavier_uniform(fastrand::f32),
+        l3: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l4: activation::Tanh,
-        l5: fcnn::Fcnn::new_xavier_uniform(fastrand::f32),
+        l5: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l6: activation::Softmax,
     });
 
     match std::env::args().nth(1).unwrap().as_str() {
         "train" => {
+            let (images, labels) = reader::read_data("train", None).unwrap();
+
             let (mut o1, mut o3, mut o5) = load(3, || (
-                fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.001)),
-                fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.001)),
-                fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.001)),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
             ));
 
             for i in 0.. {
@@ -81,10 +71,11 @@ fn main() {
             }
         },
         "try" => {
-            for (i, l) in images.iter().zip(labels.iter()) {
-                visualize(i);
-                println!("Expected: {}", l);
+            let (images, labels) = reader::read_data("t10k", None).unwrap();
 
+            let mut wrong_c = [0; 10];
+
+            for (i, l) in images.iter().zip(labels.iter()) {
                 let f = model.forward(i);
                 let p = f
                     .inner
@@ -97,10 +88,13 @@ fn main() {
                     })
                 .unwrap();
 
-                println!("Predicted: {} ({:.1}%)", p.0, p.1[0] * 100.0);
-                bar(&f);
-                std::thread::sleep(std::time::Duration::from_secs(1));
+                if p.0 != *l as usize {
+                    wrong_c[*l as usize] += 1;
+                }
             }
+
+            println!("Correct%: {:.2}%", (images.len() - wrong_c.iter().sum::<usize>()) as f32 / images.len() as f32 * 100.0);
+            println!("Incorrect frequency: {wrong_c:?}");
         },
         _ => panic!("unknown command"),
     }
