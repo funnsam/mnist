@@ -9,7 +9,7 @@ const MINI_BATCH_SIZE: usize = 5000;
 fn load<T: for<'a> serde::Deserialize<'a>, F: Fn() -> T>(n: usize, default: F) -> T {
     std::env::args().nth(n)
         .and_then(|path| std::fs::read(path).ok())
-        .and_then(|file| postcard::from_bytes(&file).ok())
+        .and_then(|file| stacker::grow(20_000_000, || postcard::from_bytes(&file).ok()))
         .unwrap_or_else(default)
 }
 
@@ -49,9 +49,9 @@ fn preproc(i: &Vector<784>) -> Vector<784> {
 
 fn main() {
     let mut model = load(2, || MnistModel {
-        l1: fcnn::Fcnn::new_he_uniform(fastrand::f32).into(),
+        l1: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l2: activation::LeakyRelu(0.01),
-        l3: fcnn::Fcnn::new_he_uniform(fastrand::f32).into(),
+        l3: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l4: activation::LeakyRelu(0.01),
         l5: fcnn::Fcnn::new_xavier_uniform(fastrand::f32).into(),
         l6: activation::Softmax,
@@ -62,15 +62,20 @@ fn main() {
             let (images, labels) = reader::read_data("train", None).unwrap();
 
             let (mut o1, mut o3, mut o5) = load(3, || (
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
+                fcnn::make_optimizers!(Box::new(adam::Adam::new(0.9, 0.999, 0.005))),
+                fcnn::make_optimizers!(Box::new(adam::Adam::new(0.9, 0.999, 0.005))),
+                fcnn::make_optimizers!(Box::new(adam::Adam::new(0.9, 0.999, 0.005))),
             ));
 
+            let mut c1 = Box::new(fcnn::FcnnCollector::new());
+            let mut c3 = Box::new(fcnn::FcnnCollector::new());
+            let mut c5 = Box::new(fcnn::FcnnCollector::new());
+
             for i in 0.. {
-                let mut c1 = fcnn::FcnnCollector::new();
-                let mut c3 = fcnn::FcnnCollector::new();
-                let mut c5 = fcnn::FcnnCollector::new();
+                c1.reset();
+                c3.reset();
+                c5.reset();
+
                 let mut loss = 0.0;
 
                 for _ in 0..MINI_BATCH_SIZE {
@@ -91,9 +96,12 @@ fn main() {
                     loss += loss::categorical_cross_entropy(out, &expected).inner.iter().flatten().sum::<f32>();
                 }
 
-                model.l1.update(c1, MINI_BATCH_SIZE, &mut o1);
-                model.l3.update(c3, MINI_BATCH_SIZE, &mut o3);
-                model.l5.update(c5, MINI_BATCH_SIZE, &mut o5);
+                *c1 /= MINI_BATCH_SIZE as f32;
+                *c3 /= MINI_BATCH_SIZE as f32;
+                *c5 /= MINI_BATCH_SIZE as f32;
+                model.l1.update(&c1, &mut o1);
+                model.l3.update(&c3, &mut o3);
+                model.l5.update(&c5, &mut o5);
 
                 println!("{i:>5} {}", loss / MINI_BATCH_SIZE as f32);
 
@@ -104,9 +112,9 @@ fn main() {
             }
         },
         "try" => {
-            let (images, labels) = reader::read_data("t10k", None).unwrap();
+            let (images, labels) = reader::read_data("test", None).unwrap();
 
-            let mut wrong_c = [0; 10];
+            let mut wrong_c = [0; 43];
 
             for (i, l) in images.iter().zip(labels.iter()) {
                 let f = model.forward(i);
@@ -134,7 +142,7 @@ fn main() {
 
             for (i, l) in images.iter().zip(labels.iter()) {
                 visualize(&preproc(i));
-                println!("{l}");
+                println!("{}", mnist::MAP[*l as usize]);
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }
         },

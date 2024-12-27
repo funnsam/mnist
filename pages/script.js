@@ -1,4 +1,4 @@
-const { load_model, get_prob } = wasm_bindgen;
+const { load_model, get_prob, map } = wasm_bindgen;
 
 const canvas = document.getElementById("draw");
 const ctx = canvas.getContext("2d");
@@ -59,6 +59,10 @@ canvas.ontouchmove = (e) => {
 };
 
 wasm_bindgen().then(() => {
+    for (let i = 0; i < 43; i++) {
+        document.getElementById("meters").innerHTML += `<div class="meter"><a>${map(i)}</a><span id="prob${i}"></span><span></span></div>`;
+    }
+
     fetch("model.bin").then((r) => r.bytes()).then((data) => {
         let model = load_model(data);
 
@@ -70,7 +74,7 @@ wasm_bindgen().then(() => {
 
                 let max_v = -Infinity;
                 let max_i = 0;
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 43; i++) {
                     document.getElementById("prob" + i).style.width = `${p[i] * 100}%`;
 
                     if (max_v < p[i]) {
@@ -79,7 +83,7 @@ wasm_bindgen().then(() => {
                     }
                 }
 
-                document.getElementById("prediction").innerText = `I think it's a ${max_i} (${(max_v * 100).toFixed(2)}% confidence)`
+                document.getElementById("prediction").innerText = `I think it's a ${map(max_i)} (${(max_v * 100).toFixed(2)}% confidence)`
             }
         }, 20);
     });

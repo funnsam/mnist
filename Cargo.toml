@@ -14,6 +14,7 @@ wasm-bindgen = "0.2"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 fastrand = "2.3.0"
+stacker = "0.1.17"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
