@@ -40,10 +40,26 @@ html, body {
 body {
     padding: 0.5rem 0;
     box-sizing: border-box;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
 }
 
-body > div {
-    margin-top: 0.5rem;
+@media only screen and (max-width: 599px) {
+    body {
+        flex-direction: column;
+    }
+}
+
+.controls {
+    text-align: center;
+    flex: 1;
+    max-width: 15rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 #draw {
@@ -55,19 +71,22 @@ body > div {
     margin: 0 auto;
 }
 
-.controls {
+#prediction {
     text-align: center;
 }
 
-#prediction {
-    text-align: center;
+#meters {
+    width: 80%;
+    max-width: 25rem;
+    flex: 1.5;
 }
 
 .meter {
     position: relative;
     width: 100%;
-    max-width: 15rem;
-    height: 2rem;
+    height: 5%;
+    min-height: 1rem;
+    max-height: 5rem;
     margin: 0.1rem auto;
     padding: 0;
 }
@@ -87,8 +106,12 @@ body > div {
     position: absolute;
     z-index: 9999;
     left: 0.5rem;
-    top: 1rem;
+    top: 50%;
     transform: translateY(-50%);
 }
 
 a:link, a:visited { color: var(--blue); }
+
+p {
+    text-align: justify;
+}

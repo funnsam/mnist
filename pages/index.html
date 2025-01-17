@@ -6,12 +6,12 @@
         <title>Digit recognition</title>
     </head>
     <body>
-        <canvas id="draw" width="28" height="28"></canvas>
         <div class="controls">
+            <canvas id="draw" width="28" height="28"></canvas>
             <button id="clear_btn">Clear</button>
         </div>
 
-        <div>
+        <div id="meters">
             <div id="prediction"></div>
             <div class="meter"><a>0</a><span id="prob0"></span></div>
             <div class="meter"><a>1</a><span id="prob1"></span></div>
@@ -23,10 +23,11 @@
             <div class="meter"><a>7</a><span id="prob7"></span></div>
             <div class="meter"><a>8</a><span id="prob8"></span></div>
             <div class="meter"><a>9</a><span id="prob9"></span></div>
-        </div>
 
-        <div class="controls">
-            <a href="https://github.com/funnsam/mnist">Check out at Github</a>
+            <p>
+                Model is running locally and data are not collected. Learn more about this project
+                <a href="https://github.com/funnsam/mnist">here</a>.
+            </p>
         </div>
 
         <script src="pkg/mnist.js"></script>
