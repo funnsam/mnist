@@ -59,8 +59,8 @@ canvas.ontouchmove = (e) => {
 };
 
 wasm_bindgen().then(() => {
-    fetch("model.bin").then((r) => r.bytes()).then((data) => {
-        let model = load_model(data);
+    fetch("model.bin").then((r) => r.arrayBuffer()).then((data) => {
+        let model = load_model(new Uint8Array(data));
 
         setInterval(() => {
             if (drawn) {
