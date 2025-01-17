@@ -2,15 +2,23 @@ const { load_model, get_prob } = wasm_bindgen;
 
 const canvas = document.getElementById("draw");
 const ctx = canvas.getContext("2d");
+
 ctx.fillStyle = "#000";
 ctx.fillRect(0, 0, 28, 28);
-
-ctx.strokeStyle = "#fff";
-ctx.lineWidth = 2;
-
 document.getElementById("clear_btn").onclick = () => {
     ctx.fillRect(0, 0, 28, 28);
     drawn = true;
+};
+
+ctx.lineWidth = 2;
+document.getElementById("brush_size").oninput = (e) => {
+    document.getElementById("brush_size_lb").innerText = `Brush size: ${e.target.value}`;
+    ctx.lineWidth = e.target.value;
+};
+
+ctx.strokeStyle = "#fff";
+document.getElementById("erase_toggle").oninput = (e) => {
+    ctx.strokeStyle = e.target.checked ? "#000" : "#fff";
 };
 
 let drawn = true;
