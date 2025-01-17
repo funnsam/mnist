@@ -10,7 +10,10 @@ fn load<T: for<'a> serde::Deserialize<'a>, F: Fn() -> T>(n: usize, default: F) -
     std::env::args().nth(n)
         .and_then(|path| std::fs::read(path).ok())
         .and_then(|file| postcard::from_bytes(&file).ok())
-        .unwrap_or_else(default)
+        .unwrap_or_else(|| {
+            println!("default");
+            default()
+        })
 }
 
 fn preproc(i: &Vector<784>) -> Vector<784> {
@@ -67,10 +70,14 @@ fn main() {
                 Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
             ));
 
+            let mut c1 = fcnn::FcnnCollector::new();
+            let mut c3 = fcnn::FcnnCollector::new();
+            let mut c5 = fcnn::FcnnCollector::new();
             for i in 0.. {
-                let mut c1 = fcnn::FcnnCollector::new();
-                let mut c3 = fcnn::FcnnCollector::new();
-                let mut c5 = fcnn::FcnnCollector::new();
+                c1.reset();
+                c3.reset();
+                c5.reset();
+
                 let mut loss = 0.0;
 
                 for _ in 0..MINI_BATCH_SIZE {
@@ -91,9 +98,12 @@ fn main() {
                     loss += loss::categorical_cross_entropy(out, &expected).inner.iter().flatten().sum::<f32>();
                 }
 
-                model.l1.update(c1, MINI_BATCH_SIZE, &mut o1);
-                model.l3.update(c3, MINI_BATCH_SIZE, &mut o3);
-                model.l5.update(c5, MINI_BATCH_SIZE, &mut o5);
+                c1 /= MINI_BATCH_SIZE as f32;
+                c3 /= MINI_BATCH_SIZE as f32;
+                c5 /= MINI_BATCH_SIZE as f32;
+                model.l1.update(&c1, &mut o1);
+                model.l3.update(&c3, &mut o3);
+                model.l5.update(&c5, &mut o5);
 
                 println!("{i:>5} {}", loss / MINI_BATCH_SIZE as f32);
 

@@ -63,24 +63,24 @@ wasm_bindgen().then(() => {
         let model = load_model(new Uint8Array(data));
 
         setInterval(() => {
-            if (drawn) {
-                drawn = false;
+            if (!drawn) return;
 
-                let p = get_prob(model, ctx.getImageData(0, 0, 28, 28).data);
+            drawn = false;
 
-                let max_v = -Infinity;
-                let max_i = 0;
-                for (let i = 0; i < 10; i++) {
-                    document.getElementById("prob" + i).style.width = `${p[i] * 100}%`;
+            let p = get_prob(model, ctx.getImageData(0, 0, 28, 28).data);
 
-                    if (max_v < p[i]) {
-                        max_v = p[i];
-                        max_i = i;
-                    }
+            let max_v = -Infinity;
+            let max_i = 0;
+            for (let i = 0; i < 10; i++) {
+                document.getElementById("prob" + i).style.width = `${p[i] * 100}%`;
+
+                if (max_v < p[i]) {
+                    max_v = p[i];
+                    max_i = i;
                 }
-
-                document.getElementById("prediction").innerText = `I think it's a ${max_i} (${(max_v * 100).toFixed(2)}% confidence)`
             }
+
+            document.getElementById("prediction").innerText = `I think it's a ${max_i} (${(max_v * 100).toFixed(2)}% confidence)`
         }, 20);
     });
 });
