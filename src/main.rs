@@ -65,9 +65,9 @@ fn main() {
             let (images, labels) = reader::read_data("train", None).unwrap();
 
             let (mut o1, mut o3, mut o5) = load(3, || (
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
-                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.005))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
+                Box::new(fcnn::make_optimizers!(adam::Adam::new(0.9, 0.999, 0.01))),
             ));
 
             let mut c1 = fcnn::FcnnCollector::new();
