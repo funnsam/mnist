@@ -25,6 +25,9 @@
     --base: #24273a;
     --mantle: #1e2030;
     --crust: #181926;
+
+    accent-color: var(--green);
+    color-scheme: dark;
 }
 
 html, body {
@@ -131,4 +134,41 @@ p {
     #controls {
         max-width: 25rem;
     }
+}
+
+button {
+    background-color: var(--surface0);
+    color: var(--text);
+    border: 1px solid var(--text);
+    border-radius: 0;
+    transition: 0.25s all;
+}
+
+button:hover {
+    background-color: var(--surface1);
+}
+
+button:active {
+    background-color: var(--surface2);
+}
+
+input[type=range]::-moz-range-progress {
+    background-color: var(--green);
+}
+
+input[type=range]::-moz-range-track {
+    background-color: var(--surface0);
+}
+
+input[type=range]::-moz-range-thumb {
+    background-color: var(--text);
+    outline: none;
+}
+
+input[type=range] {
+    background-color: transparent;
+}
+
+input[type=checkbox] {
+    outline-color: var(--text) !important;
 }

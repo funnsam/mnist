@@ -6,5 +6,5 @@ Training and testing data are from the MNIST dataset. Training inputs are transl
 noise are added.
 
 ## Performance
-It predicts 98.64% correct on the MNIST testing dataset in 0.746 seconds on a Tensor G4, including
+It predicts 99.06% correct on the MNIST testing dataset in 1.198 seconds on a Tensor G4, including
 reading the model and dataset.

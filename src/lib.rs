@@ -7,7 +7,9 @@ model! {
     #[derive(Clone, serde::Serialize, serde::Deserialize)]
     pub MnistModel: 1, 784 => 1, 10
 
-    => pub Box<fcnn::Fcnn<784, 128>>
+    => pub Box<fcnn::Fcnn<784, 196>>
+    => #[activation] pub activation::LeakyRelu
+    => pub Box<fcnn::Fcnn<196, 128>>
     => #[activation] pub activation::LeakyRelu
     => pub Box<fcnn::Fcnn<128, 64>>
     => #[activation] pub activation::LeakyRelu

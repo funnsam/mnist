@@ -3,7 +3,10 @@ pages/pkg: src
 	- rm pages/pkg -r
 	mv pkg pages
 
-test: pages/pkg
+pages/model.bin: model.bin
+	cp model.bin pages/
+
+test: pages/pkg pages/model.bin
 	cd pages && python3 -m http.server
 
 .PHONY: test
