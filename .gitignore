@@ -2,3 +2,5 @@
 /db
 /*.bin
 pkg
+*.zip
+*.csv

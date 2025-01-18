@@ -175,6 +175,31 @@ fn main() {
                 std::thread::sleep(std::time::Duration::from_secs(1));
             }
         },
+        "kaggle" => {
+            println!("ImageId,Label");
+
+            let images = std::fs::read_to_string("test.csv").unwrap();
+
+            for (i, im) in images.lines().enumerate().skip(1) {
+                let image = Vector::from_iter(
+                    im.split(',').map(|i| i.parse::<u8>().unwrap() as f32 / 255.0),
+                );
+
+                let f = model.forward(&image);
+                let p = f
+                    .inner
+                    .iter()
+                    .enumerate()
+                    .max_by(|a, b| {
+                        a.1[0]
+                            .partial_cmp(&b.1[0])
+                            .unwrap_or(core::cmp::Ordering::Equal)
+                    })
+                .unwrap();
+
+                println!("{i},{}", p.0);
+            }
+        },
         _ => panic!("unknown command"),
     }
 }
